@@ -65,6 +65,7 @@ pub enum Error {
     UmountOldRoot(io::Error),
     UnexpectedListenerFd(i32),
     UnshareNewNs(io::Error),
+    UnshareNewPID(io::Error),
     UnsetCloexec(io::Error),
     Write(PathBuf, io::Error),
 }
@@ -154,7 +155,6 @@ impl fmt::Display for Error {
                 "Failed to create {} via mknod inside the jail: {}",
                 devname, err
             ),
-            MmapStack(ref err) => write!(f, "Failed mapping stack for child process: {}", err),
             MountBind(ref err) => {
                 write!(f, "Failed to bind mount the jail root directory: {}", err)
             }
@@ -201,6 +201,9 @@ impl fmt::Display for Error {
             }
             UnshareNewNs(ref err) => {
                 write!(f, "Failed to unshare into new mount namespace: {}", err)
+            }
+            UnshareNewPID(ref err) => {
+                write!(f, "Failed to unshare into new PID namespace: {}", err)
             }
             UnsetCloexec(ref err) => write!(
                 f,
@@ -675,6 +678,10 @@ mod tests {
         assert_eq!(
             format!("{}", Error::UnshareNewNs(io::Error::from_raw_os_error(42))),
             "Failed to unshare into new mount namespace: No message of desired type (os error 42)",
+        );
+        assert_eq!(
+            format!("{}", Error::UnshareNewPID(io::Error::from_raw_os_error(42))),
+            "Failed to unshare into new PID namespace: No message of desired type (os error 42)",
         );
         assert_eq!(
             format!("{}", Error::UnsetCloexec(io::Error::from_raw_os_error(42))),

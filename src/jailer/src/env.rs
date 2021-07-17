@@ -207,11 +207,11 @@ impl Env {
         // This is a wrapper for our child callback to the clone libc function.
         // We will use clone's arg parameter as the actual callback and call it from here.
         extern "C" fn child_fn(arg: *mut libc::c_void) -> libc::c_int {
-            let callback_ref: *mut *mut dyn FnOnce() = unsafe { std::mem::transmute(arg) };
+            let callback_ref: *mut *mut dyn FnOnce() = arg as *mut *mut dyn std::ops::FnOnce();
             let callback = unsafe { Box::from_raw(*callback_ref) };
 
             callback();
-            return 0;
+            0
         }
 
         let child_callback = || {
